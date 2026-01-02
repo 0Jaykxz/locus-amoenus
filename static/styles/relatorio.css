@@ -1,0 +1,49 @@
+.card {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-control,
+.form-select {
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.table td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(67, 97, 238, 0.05);
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.8em;
+}
+
+.border-start {
+  border-left-width: 4px !important;
+}
+
+tfoot tr {
+  border-top: 2px solid #dee2e6;
+}

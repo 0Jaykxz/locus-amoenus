@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Relatório de usos mensais</h1>
+<p>Gere relatorios que exibam detalhadamente a quantia usada de um produto <br> 
+    por cada escola em cada mês do ano selecionado.</p>
+<hr>
+<form method="get">
+
+                                <select name="produto" id="produto" required>
+                                <option value="">Selecione um produto</option>
+                                {% for e in produtos %}
+                                <option value="{{ e.id }}" 
+                                        {% if request.args.produto == e.id|string %}selected{% endif %}>
+                                    {{ e.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+    <input type="number" name="ano" id="ano" placeholder="ano" value="{{ request.args.ano }}">
+
+</form>
+
+{% endblock %}

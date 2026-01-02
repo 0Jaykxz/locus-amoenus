@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{url_for('static', filename='styles/label.css')}}">
+<div class="container-fluid py-4">
+    <!-- Cabeçalho da página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2" style="color: #4361ee; font-weight: 700;">
+                <i class="fas fa-history me-2"></i>Histórico de Uso de Materiais
+            </h1>
+            <p class="text-muted mb-0">Registro completo de todas as movimentações do estoque</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Voltar
+            </a>
+            <a href="{{url_for('user.registrar')}}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Novo Uso
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de estatísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2" style="border-left: 4px solid #4361ee !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total de Registros
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ usos|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2" style="border-left: 4px solid #2ecc71 !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Escolas Atendidas
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ usos|map(attribute='escola.nome')|unique|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-school fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2" style="border-left: 4px solid #f39c12 !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Produtos Utilizados
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ usos|map(attribute='produto.nome')|unique|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box-open fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2" style="border-left: 4px solid #4cc9f0 !important;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Último Registro
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if usos %}{{ usos[0].data.strftime('%d/%m/%Y') }}{% else %}N/A{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de histórico -->
+    <div class="card shadow">
+        <div class="card-header py-3" style="background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);">
+            <h6 class="m-0 font-weight-bold text-white">
+                <i class="fas fa-table me-1"></i> Histórico de Movimentações
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="historyTable" width="100%" cellspacing="0">
+                    <thead class="thead-dark" style="background-color: #2d3748;">
+                        <tr>
+                            <th><i class="fas fa-calendar me-1"></i> Data</th>
+                            <th><i class="fas fa-school me-1"></i> Escola</th>
+                            <th><i class="fas fa-box me-1"></i> Produto</th>
+                            <th><i class="fas fa-hashtag me-1"></i> Quantidade</th>
+                            <th><i class="fas fa-cogs me-1"></i> Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usos %}
+                        <tr class="align-middle">
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary p-2">
+                                    <i class="fas fa-calendar-day me-1"></i> {{ u.data.strftime('%d/%m/%Y') }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="fw-medium">{{ u.escola.nome }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span>{{ u.produto.nome }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-opacity-20 text-success p-2 fs-6">
+                                    <i class="fas fa-cubes me-1"></i> {{ u.quantidade }} {{u.unidade}}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                        c-delete="{{url_for('user.remove', id=u.id)}}" 
+                                        c-remove-closest="tr"
+                                        data-bs-toggle="tooltip"
+                                        title="Excluir registro">
+                                    <i class="fas fa-trash-alt"></i>X
+                                </button>
+                                <button class="btn btn-sm btn-outline-info ms-1 view-btn"
+                                        data-bs-toggle="tooltip"
+                                        title="Ver detalhes"
+                                        data-escola="{{ u.escola.nome }}"
+                                        data-produto="{{ u.produto.nome }}"
+                                        data-quantidade="{{ u.quantidade }}"
+                                        data-data="{{ u.data.strftime('%d/%m/%Y') }}">
+                                    <i class="fas fa-eye"></i>
+                                    i
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Nenhum registro encontrado</h5>
+                                    <p class="text-muted mb-4">Não há histórico de uso registrado no momento</p>
+                                    <a href="{{url_for('user.registrar')}}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i> Registrar Primeiro Uso
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginação -->
+            {% if usos|length > 10 %}
+            <nav aria-label="Navegação da tabela" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Próximo</a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalhes -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="detailModalLabel">
+                    <i class="fas fa-info-circle me-2"></i> Detalhes do Registro
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Escola</h6>
+                        <p class="fw-bold" id="detailEscola">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Data</h6>
+                        <p class="fw-bold" id="detailData">-</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Produto</h6>
+                        <p class="fw-bold" id="detailProduto">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Quantidade</h6>
+                        <p class="fw-bold" id="detailQuantidade">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{url_for('static', filename='scripts/label.js')}}"></script>
+{% endblock %}

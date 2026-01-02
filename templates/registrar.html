@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho -->
+            <div class="mb-4">
+                <h1 class="h3 mb-2 text-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Registrar Uso
+                </h1>
+                <p class="text-muted mb-0">Registre uma nova saída de material do estoque</p>
+            </div>
+            
+            <!-- Formulário -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="post" id="registroForm">
+                        <!-- Escola -->
+                        <div class="mb-3">
+                            <label for="escola" class="form-label fw-medium">Escola</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-school text-primary"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="escola" 
+                                       name="escola" 
+                                       list="escolas"
+                                       placeholder="Nome da escola" 
+                                       required><datalist id="escolas">
+                                                <option value="EMEF São Paulo">
+                                                <option value="EMEF Getúlio Vargas">
+                                                <option value="EMEF Assis Brasil">
+                                                <option value="EMEF Lenira de Moura Lütz">
+                                                <option value="EMEI Esperança">
+                                                <option value="EMEI Raio de Luz">
+                                                <option value="EMEI Lenirinha">
+                                                <option value="EMEI Lenirinha Extensão Irapuá">
+                                                <option value="EMEI Lenirinha Extensão Tronqueiras">
+                                                </datalist>
+
+                            </div>
+                        </div>
+
+                        <!-- Produto -->
+                        <div class="mb-3">
+                            <label for="produto" class="form-label fw-medium">Produto</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-box text-warning"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="produto" 
+                                       name="produto" 
+                                       placeholder="Nome do produto" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Quantidade -->
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label fw-medium">Quantidade</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-hashtag text-success"></i>
+                                </span>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="quantidade" 
+                                       name="quantidade" 
+                                       placeholder="Quantidade" 
+                                       required
+                                       min="1"
+                                       step="1">
+                                <span class="input-group-text bg-light"><select class="form-control mb-2" name="unidade" required>
+                                                                            <option value="UN">Unidade (UN)</option>
+                                                                            <option value="CX">Caixa (CX)</option>
+                                                                            <option value="PC">Pacote (PC)</option>
+                                                                        </select></span>
+                            </div>
+                        </div>
+
+                        <!-- Data -->
+                        <div class="mb-4">
+                            <label for="data" class="form-label fw-medium">Data</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-calendar text-info"></i>
+                                </span>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="data" 
+                                       name="data" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-between align-items-center border-top pt-4">
+                            <a href="{{url_for('user.relatorio')}}" class="btn btn-outline-secondary">
+                                <i class="fas fa-chart-bar me-1"></i> Relatórios
+                            </a>
+                            <div>
+                                <a href="/" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-save me-1"></i> Registrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Informações rápidas -->
+            <div class="mt-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-start border-primary border-3 h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-primary">
+                                    <i class="fas fa-lightbulb me-2"></i>Dica
+                                </h6>
+                                <p class="card-text small text-danger">
+                                    Recomendamos altamente que você SELECIONE uma das sugestões de escolas cadastradas ao invés de escrever por conta própia o nome.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-start border-warning border-3 h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Atenção
+                                </h6>
+                                <p class="card-text small text-muted">
+                                    Preencha todos os campos corretamente.
+                                    Este registro será adicionado ao histórico permanente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{url_for('static', filename='styles/form.css')}}">
+
+<script src="url_for('static', filename='scripts/form.js')"></script>
+{% endblock %}

@@ -1,0 +1,30 @@
+select{
+    border: none;
+}
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .form-control, .input-group-text {
+        border-radius: 6px;
+    }
+    
+    .input-group-text {
+        border-right: none;
+    }
+    
+    .form-control:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+    }
+    
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+    }
+    
+    .border-start {
+        border-left-width: 4px !important;
+    }

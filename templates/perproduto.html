@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{url_for('static', filename='styles/relatorio.css')}}">
+<div class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-primary">
+                <i class="fas fa-chart-bar me-2"></i>Relatório por mês e produto
+            </h1>
+            <p class="text-muted mb-0">Gere relatorios que exibam detalhadamente a quantia usada de um produto <br> 
+    por cada escola em cada mês do ano selecionado.</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3">
+                        <!-- Produto -->
+                        <div class="col-md-6">
+                            <label for="escola" class="form-label fw-medium">
+                                <i class="fas fa-school me-1 text-primary"></i> Produto
+                            </label>
+                            <select name="produto" id="produto" class="form-select" required>
+                                <option value="">Selecione um produto</option>
+                                {% for e in produtos %}
+                                <option value="{{ e.id }}" 
+                                        {% if request.args.produto == e.id|string %}selected{% endif %}>
+                                    {{ e.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Ano Seleciondp -->
+                        <div class="col-md-3">
+                            <label for="inicio" class="form-label fw-medium">
+                                <i class="fas fa-calendar-start me-1 text-info"></i> Ano
+                            </label>
+                            <input type="number" 
+                                   name="ano" 
+                                   id="ano" 
+                                   class="form-control" 
+                                   value="{{ request.args.ano }}">
+                        </div>
+
+                        <!-- Botão Gerar -->
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div>
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                                </a>
+                                <a href="{{url_for('user.relatorio')}}" class="btn btn-success">
+                                    Alternar modo
+                                </a>
+                                </div>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-chart-line me-1"></i> Gerar Relatório
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="col-lg-4">
+            <div class="card border-start border-primary border-3 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-primary mb-3">
+                        <i class="fas fa-info-circle me-2"></i> Como usar
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Selecione o produto desejado
+                            </small>
+                        </li>
+                        <li class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Defina o ano
+                            </small>
+                        </li>
+                        <li>
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Clique em "Gerar Relatório"
+                            </small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    {% if dados %}
+                <a class="btn btn-danger px-4"
+                   href="{{ url_for('user.relatorio_mensal_pdf',
+                            produto=request.args.produto,
+                            ano=request.args.ano
+                        ) }}">
+                   <i class="fas fa-file-pdf me-1"></i> Baixar PDF
+                </a>
+    {% endif %}
+
+    <!-- Mensagem quando não há dados -->
+    {% if request.args.produto and not dados %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum dado encontrado</h5>
+                    <p class="text-muted mb-4">
+                        Não há registros de consumo para os filtros selecionados.
+                    </p>
+                    <a href="?" class="btn btn-outline-primary">
+                        <i class="fas fa-redo me-1"></i> Limpar Filtros
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="{{url_for('static', filename='scripts/relatorio.js')}}">
+</script>
+{% endblock %}

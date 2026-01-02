@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="{{url_for('static', filename='styles/relatorio.css')}}">
+<div class="container py-4">
+    <!-- Cabeçalho -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-2 text-primary">
+                <i class="fas fa-chart-bar me-2"></i>Relatório por Escola
+            </h1>
+            <p class="text-muted mb-0">Gere relatórios detalhados do consumo de materiais por escola</p>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3">
+                        <!-- Escola -->
+                        <div class="col-md-6">
+                            <label for="escola" class="form-label fw-medium">
+                                <i class="fas fa-school me-1 text-primary"></i> Escola
+                            </label>
+                            <select name="escola" id="escola" class="form-select" required>
+                                <option value="">Selecione uma escola</option>
+                                {% for e in escolas %}
+                                <option value="{{ e.id }}" 
+                                        {% if request.args.escola == e.id|string %}selected{% endif %}>
+                                    {{ e.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Data Inicial -->
+                        <div class="col-md-3">
+                            <label for="inicio" class="form-label fw-medium">
+                                <i class="fas fa-calendar-start me-1 text-info"></i> Data Inicial
+                            </label>
+                            <input type="date" 
+                                   name="inicio" 
+                                   id="inicio" 
+                                   class="form-control" 
+                                   value="{{ request.args.inicio }}">
+                        </div>
+
+                        <!-- Data Final -->
+                        <div class="col-md-3">
+                            <label for="fim" class="form-label fw-medium">
+                                <i class="fas fa-calendar-end me-1 text-info"></i> Data Final
+                            </label>
+                            <input type="date" 
+                                   name="fim" 
+                                   id="fim" 
+                                   class="form-control" 
+                                   value="{{ request.args.fim }}">
+                        </div>
+
+                        <!-- Nome do diretor -->
+                        <div class="col-md-3">
+                            <label for="fim" class="form-label fw-medium">
+                                <i class="fas me-1 text-primary"></i> Diretor
+                            </label>
+                            <input type="text" 
+                                   name="diretor" 
+                                   id="diretor" 
+                                   class="form-control"
+                                   list="diretores"
+                                   value="{{ request.args.diretor }}" ><datalist id="diretores">
+                                                                        <option value="Marisa Dietrich">
+                                                                        <option value="Maico dos Santos">
+                                                                        <option value="Aldair Rubens dos santos">
+                                                                        <option value="Amilton Barbosa Dias">
+                                                                        <option value="Mikelli Dinkoski Menezes">
+                                                                        <option value="Sandra Barbosa">
+                                                                        <option value="Maria Rosa Richter">
+                                                                        </datalist>
+                        </div>
+
+                        <!-- Botão Gerar -->
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <div>
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                                </a>
+                                <a href="{{url_for('user.relatorio_mensal')}}" class="btn btn-success">
+                                    Alternar modo
+                                </a>
+                                </div>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-chart-line me-1"></i> Gerar Relatório
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="col-lg-4">
+            <div class="card border-start border-primary border-3 h-100">
+                <div class="card-body">
+                    <h6 class="card-title text-primary mb-3">
+                        <i class="fas fa-info-circle me-2"></i> Como usar
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Selecione a escola desejada
+                            </small>
+                        </li>
+                        <li class="mb-2">
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Defina o período (opcional)
+                            </small>
+                        </li>
+                        <li>
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Clique em "Gerar Relatório"
+                            </small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    {% if dados %}
+    <div class="row">
+        <div class="col-12">
+            <!-- Cabeçalho dos resultados -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="fas fa-list-alt me-2 text-primary"></i>
+                        Resultados do Relatório
+                    </h5>
+                    <small class="text-muted">
+                        Escola: 
+                        {% for e in escolas %}
+                            {% if e.id == request.args.escola|int %}
+                                {{ e.nome }}
+                            {% endif %}
+                        {% endfor %}
+                        {% if request.args.inicio or request.args.fim %}
+                        | Período: {{ request.args.inicio or 'Início' }} até {{ request.args.fim or 'Hoje' }}
+                        {% endif %}
+                        {% if request.args.diretor%}
+                        | Diretor: {{ request.args.diretor }}
+                        {% endif %}
+                    </small>
+                </div>
+                <a class="btn btn-danger px-4"
+                   href="{{ url_for('user.relatorio_pdf',
+                            escola=request.args.escola,
+                            inicio=request.args.inicio,
+                            fim=request.args.fim,
+                            diretor=request.args.diretor
+                        ) }}">
+                   <i class="fas fa-file-pdf me-1"></i> Baixar PDF
+                </a>
+            </div>
+
+            <!-- Tabela de resultados -->
+            <div class="card shadow-sm border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">
+                                    <i class="fas fa-box me-1 text-warning"></i> Produto
+                                </th>
+                                <th class="border-0 text-end">
+                                    <i class="fas fa-hashtag me-1 text-success"></i> Total
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in dados %}
+                            <tr>
+                                <td class="fw-medium">{{ d.produto.nome }}</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success bg-opacity-10 text-success p-2">
+                                        {{ d.total }} {{d.unidade}}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <!-- Total Geral -->
+                        <tfoot class="table-light">
+                            <tr>
+                                <td class="fw-bold text-primary">Total Geral</td>
+                                <td class="text-end fw-bold text-primary">
+                                    {% set total_geral = [] %}
+                                    {% for d in dados %}
+                                        {% if total_geral.append(d.total) %}{% endif %}
+                                    {% endfor %}
+                                    {{ total_geral|sum }} unidades
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Estatísticas Resumidas -->
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-primary bg-opacity-10 border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Produtos Diferentes</h6>
+                                    <h4 class="mb-0 text-primary">{{ dados|length }}</h4>
+                                </div>
+                                <i class="fas fa-boxes text-primary fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-success bg-opacity-10 border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total de Unidades</h6>
+                                    {% set total_unidades = [] %}
+                                    {% for d in dados %}
+                                        {% if total_unidades.append(d.total) %}{% endif %}
+                                    {% endfor %}
+                                    <h4 class="mb-0 text-success">{{ total_unidades|sum }}</h4>
+                                </div>
+                                <i class="fas fa-cubes text-success fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-info bg-opacity-10 border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Média por Produto</h6>
+                                    <h4 class="mb-0 text-info">
+                                        {% if dados|length > 0 %}
+                                            {% set total_sum = [] %}
+                                            {% for d in dados %}
+                                                {% if total_sum.append(d.total) %}{% endif %}
+                                            {% endfor %}
+                                            {{ (total_sum|sum / dados|length)|round(1) }}
+                                        {% else %}0{% endif %}
+                                    </h4>
+                                </div>
+                                <i class="fas fa-calculator text-info fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Mensagem quando não há dados -->
+    {% if request.args.escola and not dados %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum dado encontrado</h5>
+                    <p class="text-muted mb-4">
+                        Não há registros de consumo para os filtros selecionados.
+                    </p>
+                    <a href="?" class="btn btn-outline-primary">
+                        <i class="fas fa-redo me-1"></i> Limpar Filtros
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="{{url_for('static', filename='scripts/relatorio.js')}}">
+</script>
+{% endblock %}
