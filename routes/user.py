@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, send_file
 from database.models.tables import *
 import datetime
-import io
+import io, os, re, locale
 from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
@@ -11,6 +11,7 @@ from reportlab.platypus import (
 )
 from reportlab.lib.styles import getSampleStyleSheet
 
+locale.setlocale(locale.LC_TIME, "Portuguese_Brazil.1252")
 
 user_route = Blueprint('user', __name__)
 
@@ -184,13 +185,13 @@ def remove(id):
 
 @user_route.route('/relatorio/produto', methods=['GET'])
 def relatorio_mensal():
-    produtos = Produto.select()
+    produtos = Escola.select()
     dados = None
 
-    produto_req = request.args.get('produto')
+    escolax_req = request.args.get('escola')
     ano = request.args.get("ano")
 
-    if produto_req and ano:
+    if escolax_req and ano:
         dados = (
     
         Consumo.select(
@@ -199,7 +200,7 @@ def relatorio_mensal():
             fn.SUM(Consumo.quantidade).alias('total_mes')
         )
         .where(
-            (Consumo.produto == produto_req) &
+            (Consumo.escola == escolax_req) &
             (fn.strftime('%Y', Consumo.data) == str(ano))
         )
         .group_by(
@@ -212,77 +213,73 @@ def relatorio_mensal():
 
     return render_template(
         'perproduto.html',
-        produtos=produtos,
+        escolas=produtos,
         dados=dados
     )
 
 @user_route.route('/relatorio/produto/pdf')
 def relatorio_mensal_pdf():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PASTA_RELATORIOS = os.path.join(BASE_DIR, 'relatorios')
+    os.makedirs(PASTA_RELATORIOS, exist_ok=True)
 
-    produto_id = request.args.get('produto')
+
+    escola_id = request.args.get('escola')
     ano = request.args.get('ano')
 
-    produto = Produto.get_by_id(produto_id)
+    if not escola_id or not ano:
+        return "Parâmetros obrigatórios ausentes", 400
 
-    # ================= QUERY PRINCIPAL =================
-    query = (
+    escola = Escola.get_by_id(escola_id)
+
+    registros = (
         Consumo
         .select(
-            fn.strftime('%m/%Y', Consumo.data).alias('mes'),
-            Escola.nome.alias('escola'),
-            Consumo.unidade.alias('unidade'),
-            fn.SUM(Consumo.quantidade).alias('total_mes')
-        )
-        .join(Escola, on=(Consumo.escola == Escola.id))
-        .where(
-            (Consumo.produto == produto) &
-            (fn.strftime('%Y', Consumo.data) == str(ano))
-        )
-        .group_by(
-            fn.strftime('%m/%Y', Consumo.data),
-            Escola.nome,
+            Produto.nome.alias('produto'),
+            fn.strftime('%m', Consumo.data).alias('mes'),
+            fn.strftime('%d', Consumo.data).alias('dia'),
+            Consumo.quantidade,
             Consumo.unidade
+        )
+        .join(Produto, on=(Consumo.produto == Produto.id))
+        .where(
+            (Consumo.escola == escola) &
+            (fn.strftime('%Y', Consumo.data) == str(ano))
         )
         .order_by(
             fn.strftime('%Y-%m', Consumo.data),
-            Escola.nome
+            Produto.nome,
+            Consumo.data
         )
         .dicts()
     )
 
+    nome_pdf = f"relatorio_consumo_{escola.nome}_{ano}.pdf"
+    nome_escola_limpo = re.sub(r'[^a-zA-Z0-9_-]', '_', escola.nome)
+    nome_pdf = f"relatorio_consumo_{nome_escola_limpo}_{ano}.pdf"
+    penes = os.path.join(PASTA_RELATORIOS, nome_pdf)
 
-
-    # ================= TOTAL GERAL =================
-    totais = (
-        Consumo
-        .select(
-            Consumo.unidade,
-            fn.SUM(Consumo.quantidade).alias('total')
-        )
-        .where(
-            (Consumo.produto == produto) &
-            (fn.strftime('%Y', Consumo.data) == str(ano))
-        )
-        .group_by(Consumo.unidade)
+    doc = SimpleDocTemplate(
+        penes,
+        pagesize=A4,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=36,
+        bottomMargin=36
     )
 
-    # ================= PDF =================
-    nome_pdf = f"relatorio_{produto.nome}_{ano}.pdf"
-
-    doc = SimpleDocTemplate(nome_pdf, pagesize=A4)
     styles = getSampleStyleSheet()
     elementos = []
 
-    # -------- TÍTULO --------
+    # ===== CABEÇALHO =====
     elementos.append(Paragraph(
-        "RELATÓRIO MENSAL DE CONSUMO POR PRODUTO",
+        "RELATÓRIO DE CONSUMO ANUAL",
         styles['Title']
     ))
     elementos.append(Spacer(1, 12))
 
-    # -------- CABEÇALHO --------
     elementos.append(Paragraph(
-        f"<b>Produto:</b> {produto.nome}<br/>"
+        f"<b>Escola:</b> {escola.nome}<br/>"
         f"<b>Ano:</b> {ano}<br/>"
         f"<b>Data de emissão:</b> {datetime.date.today().strftime('%d/%m/%Y')}",
         styles['Normal']
@@ -290,37 +287,93 @@ def relatorio_mensal_pdf():
 
     elementos.append(Spacer(1, 20))
 
-    # -------- TABELA --------
-    tabela = [['Mês/Ano', 'Escola', 'Quantidade']]
+    # ===== ORGANIZAÇÃO POR MÊS =====
+    meses = {}
+    for r in registros:
+        meses.setdefault(r['mes'], []).append(r)
 
-    for r in query:
-        tabela.append([
-            r['mes'],
-            r['escola'],
-            f"{r['total_mes']} {r['unidade']}"
-        ])
+    totais_anuais = {}
 
+    for mes, itens in meses.items():
+        nome_mes = datetime.date(1900, int(mes), 1).strftime('%B').capitalize()
 
-    elementos.append(Table(tabela, hAlign='LEFT'))
-    elementos.append(Spacer(1, 20))
+        elementos.append(Paragraph(
+            nome_mes,
+            styles['Heading2']
+        ))
+        elementos.append(Spacer(1, 8))
 
-    # -------- TOTAL --------
-    elementos.append(Paragraph("<b>Total Geral do Produto no Ano:</b>", styles['Heading2']))
+        tabela = [['Produto', 'Dia', 'Quantidade', 'Unidade']]
 
-    for t in totais:
-        elementos.append(
-            Paragraph(f"{t.total} {t.unidade}", styles['Normal'])
-        )
+        totais_mes = {}
 
-    # -------- ASSINATURA --------
+        for i in itens:
+            tabela.append([
+                i['produto'],
+                i['dia'],
+                i['quantidade'],
+                i['unidade']
+            ])
+
+            chave = (i['produto'], i['unidade'])
+            totais_mes[chave] = totais_mes.get(chave, 0) + i['quantidade']
+            totais_anuais[chave] = totais_anuais.get(chave, 0) + i['quantidade']
+
+        # Total do mês
+        tabela.append(['', '', '', ''])
+        for (produto, unidade), total in totais_mes.items():
+            tabela.append([
+                f"Total ({produto})",
+                '',
+                total,
+                unidade
+            ])
+
+        elementos.append(Table(
+            tabela,
+            colWidths=[200, 60, 80, 80],
+            style=[
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ]
+        ))
+
+        elementos.append(Spacer(1, 20))
+
+    # ===== TOTAL ANUAL =====
+    elementos.append(Paragraph(
+        "Total Anual",
+        styles['Heading2']
+    ))
+
+    tabela_total = [['Produto', 'Quantidade', 'Unidade']]
+
+    for (produto, unidade), total in totais_anuais.items():
+        tabela_total.append([produto, total, unidade])
+
+    elementos.append(Table(
+        tabela_total,
+        colWidths=[240, 120, 80],
+        style=[
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ]
+    ))
+
+    # ===== ASSINATURA =====
     elementos.append(Spacer(1, 40))
     elementos.append(Paragraph(
         "_____________________________________________<br/>"
-        "               Adrieli de Almeida",
+        "Assinatura do Diretor",
         styles['Normal']
     ))
 
     doc.build(elementos)
 
-    return send_file(nome_pdf, as_attachment=True)
-
+    return send_file(
+        penes,
+        as_attachment=True,
+        download_name=nome_pdf
+    )

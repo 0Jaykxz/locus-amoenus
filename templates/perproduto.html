@@ -22,13 +22,13 @@
                         <!-- Produto -->
                         <div class="col-md-6">
                             <label for="escola" class="form-label fw-medium">
-                                <i class="fas fa-school me-1 text-primary"></i> Produto
+                                <i class="fas fa-school me-1 text-primary"></i> Escola
                             </label>
-                            <select name="produto" id="produto" class="form-select" required>
-                                <option value="">Selecione um produto</option>
-                                {% for e in produtos %}
+                            <select name="escola" id="escola" class="form-select" required>
+                                <option value="">Selecione uma escola</option>
+                                {% for e in escolas %}
                                 <option value="{{ e.id }}" 
-                                        {% if request.args.produto == e.id|string %}selected{% endif %}>
+                                        {% if request.args.escola == e.id|string %}selected{% endif %}>
                                     {{ e.nome }}
                                 </option>
                                 {% endfor %}
@@ -79,7 +79,7 @@
                         <li class="mb-2">
                             <small class="text-muted">
                                 <i class="fas fa-check-circle text-success me-2"></i>
-                                Selecione o produto desejado
+                                Selecione a escola
                             </small>
                         </li>
                         <li class="mb-2">
@@ -104,8 +104,8 @@
     {% if dados %}
                 <a class="btn btn-danger px-4"
                    href="{{ url_for('user.relatorio_mensal_pdf',
-                            produto=request.args.produto,
-                            ano=request.args.ano
+                            ano=request.args.ano,
+                            escola=request.args.escola
                         ) }}">
                    <i class="fas fa-file-pdf me-1"></i> Baixar PDF
                 </a>

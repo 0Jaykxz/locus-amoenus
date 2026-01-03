@@ -1,6 +1,6 @@
 from flask import Flask
 from config import configure_all
-import webbrowser, sys, os, threading
+import webbrowser, sys, os, threading, re 
 
 opened = False
 
