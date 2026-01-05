@@ -22,5 +22,5 @@ app = Flask(__name__, template_folder=resource_path("templates"),
 
 configure_all(app)
 
-#threading.Timer(1, open_browser).start()
+threading.Timer(1, open_browser).start()
 app.run(debug=True, port=5000) #Mudar o debug para True no modo de desenvolvimento
