@@ -1,6 +1,6 @@
 from flask import Flask
 from config import configure_all
-import webbrowser, sys, os, threading, re 
+import webbrowser, sys, os, threading
 
 opened = False
 
@@ -23,4 +23,7 @@ app = Flask(__name__, template_folder=resource_path("templates"),
 configure_all(app)
 
 threading.Timer(1, open_browser).start()
-app.run(debug=True, port=5000) #Mudar o debug para True no modo de desenvolvimento
+print()
+print("é o Jayks né vida ❤️")
+print()
+app.run(debug=True,use_reloader=False, port=5000) #Mudar o debug para True no modo de desenvolvimento
